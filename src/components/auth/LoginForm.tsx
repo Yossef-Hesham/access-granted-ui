@@ -85,22 +85,7 @@ const LoginForm = () => {
       </div>
       
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="password">Password</Label>
-          <a
-            href="#"
-            className="text-xs text-auth-primary hover:underline"
-            onClick={(e) => {
-              e.preventDefault();
-              toast({
-                title: "Password Reset",
-                description: "Check your email for password reset instructions.",
-              });
-            }}
-          >
-            Forgot password?
-          </a>
-        </div>
+        <Label htmlFor="password">Password</Label>
         <PasswordInput
           id="password"
           value={password}
