@@ -4,13 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import PasswordInput from "./PasswordInput";
 import { Eye, EyeOff, Mail } from "lucide-react";
 
-const LoginForm = () => {
-  const navigate = useNavigate();
+interface LoginFormProps {
+  onLoginSuccess?: (email: string, password: string) => void;
+  onLoginError?: (error: string) => void;
+  className?: string;
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({
+  onLoginSuccess,
+  onLoginError,
+  className,
+}) => {
   const { toast } = useToast();
   
   const [email, setEmail] = useState("");
@@ -56,18 +64,35 @@ const LoginForm = () => {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      toast({
-        title: "Success!",
-        description: "You've been logged in successfully.",
-      });
       
-      // In a real app, you would handle the login response here
-      navigate("/dashboard");
+      try {
+        // In a real implementation, this would be the authentication logic
+        if (onLoginSuccess) {
+          onLoginSuccess(email, password);
+        }
+        
+        toast({
+          title: "Success!",
+          description: "You've been logged in successfully.",
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to login";
+        
+        if (onLoginError) {
+          onLoginError(errorMessage);
+        }
+        
+        toast({
+          title: "Login failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }, 1500);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className={`space-y-4 ${className || ""}`}>
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <div className="relative">

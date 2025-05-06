@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +7,17 @@ import { useToast } from "@/components/ui/use-toast";
 import PasswordInput from "./PasswordInput";
 import { Mail, User } from "lucide-react";
 
-const RegisterForm = () => {
+interface RegisterFormProps {
+  onRegisterSuccess?: (name: string, email: string, password: string) => void;
+  onRegisterError?: (error: string) => void;
+  className?: string;
+}
+
+const RegisterForm: React.FC<RegisterFormProps> = ({
+  onRegisterSuccess,
+  onRegisterError,
+  className,
+}) => {
   const { toast } = useToast();
   
   const [name, setName] = useState("");
@@ -84,17 +93,35 @@ const RegisterForm = () => {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      toast({
-        title: "Registration successful!",
-        description: "Your account has been created.",
-      });
       
-      // In a real app, you would handle the registration response here
+      try {
+        // In a real implementation, this would be the registration logic
+        if (onRegisterSuccess) {
+          onRegisterSuccess(name, email, password);
+        }
+        
+        toast({
+          title: "Registration successful!",
+          description: "Your account has been created.",
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to register";
+        
+        if (onRegisterError) {
+          onRegisterError(errorMessage);
+        }
+        
+        toast({
+          title: "Registration failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }, 1500);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className={`space-y-4 ${className || ""}`}>
       <div className="space-y-2">
         <Label htmlFor="name">Full Name</Label>
         <div className="relative">
