@@ -71,11 +71,14 @@ loginFormElement.addEventListener('submit', (e) => {
   
   if (isValid) {
     // Simulate login API call
-    simulateLoading(loginFormElement.querySelector('.submit-button'), 'Login', () => {
+    simulateLoading(loginFormElement.querySelector('.btn'), 'Login', () => {
       // Success simulation
       showToast('Success!', 'You\'ve been logged in successfully.', 'success');
       
-      // In a real app, you would save auth token and redirect
+      // For demo: store a flag in session storage to indicate we're logged in
+      sessionStorage.setItem('fromLogin', 'true');
+      
+      // Redirect to dashboard
       setTimeout(() => {
         window.location.href = 'dashboard.html';
       }, 1000);
@@ -134,7 +137,7 @@ registerFormElement.addEventListener('submit', (e) => {
   
   if (isValid) {
     // Simulate registration API call
-    simulateLoading(registerFormElement.querySelector('.submit-button'), 'Create Account', () => {
+    simulateLoading(registerFormElement.querySelector('.btn'), 'Create Account', () => {
       // Success simulation
       showToast('Registration successful!', 'Your account has been created.', 'success');
       
@@ -182,7 +185,7 @@ function clearErrors() {
 function simulateLoading(button, originalText, callback) {
   // Disable button and show loading state
   button.disabled = true;
-  button.textContent = 'Please wait...';
+  button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Please wait...';
   
   // Simulate API delay
   setTimeout(() => {
@@ -209,3 +212,12 @@ function hideToast() {
 
 // Close toast on click
 toastClose.addEventListener('click', hideToast);
+
+// Add event handlers to the book now buttons
+document.querySelectorAll('.btn-outline-primary').forEach(button => {
+  if (button.textContent.trim() === 'Book Now') {
+    button.addEventListener('click', () => {
+      showToast('Login Required', 'Please log in to book this event.', 'error');
+    });
+  }
+});
