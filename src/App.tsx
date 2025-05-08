@@ -1,10 +1,8 @@
 
-// This file is needed for the project structure but we're using only HTML/CSS/JS
-// This is a minimal React component that doesn't do anything
-import React from 'react';
-
+// This is just an empty stub file to satisfy the build requirements
+// The actual application uses only HTML/CSS/JS files directly
 const App = () => {
-  return <div></div>;
+  return null;
 };
 
 export default App;

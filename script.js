@@ -1,4 +1,3 @@
-
 // DOM Elements
 const loginTab = document.getElementById('login-tab');
 const registerTab = document.getElementById('register-tab');
@@ -213,7 +212,7 @@ function hideToast() {
 // Close toast on click
 toastClose.addEventListener('click', hideToast);
 
-// Add event handlers to the book now buttons
+// Event handlers for clicking the "Book Now" buttons
 document.querySelectorAll('.btn-outline-primary').forEach(button => {
   if (button.textContent.trim() === 'Book Now') {
     button.addEventListener('click', () => {
