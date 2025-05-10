@@ -72,16 +72,42 @@ loginFormElement.addEventListener('submit', (e) => {
   if (isValid) {
     // Simulate login API call
     simulateLoading(loginFormElement.querySelector('.btn'), 'Login', () => {
-      // Success simulation
-      showToast('Success!', 'You\'ve been logged in successfully.', 'success');
-      
-      // For demo: store a flag in session storage to indicate we're logged in
-      sessionStorage.setItem('fromLogin', 'true');
-      
-      // Redirect to dashboard
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-      }, 1000);
+      // Call the Django backend API
+      fetch('http://127.0.0.1:8000/api/user/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Login failed');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Success - store the authentication token
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        if (rememberMe) {
+          localStorage.setItem('rememberEmail', email);
+        }
+        
+        // Set session flag
+        sessionStorage.setItem('fromLogin', 'true');
+        
+        showToast('Success!', 'You\'ve been logged in successfully.', 'success');
+        
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+      })
+      .catch(error => {
+        showToast('Login failed', 'Invalid email or password. Please try again.', 'error');
+      });
     });
   }
 });
@@ -138,14 +164,45 @@ registerFormElement.addEventListener('submit', (e) => {
   if (isValid) {
     // Simulate registration API call
     simulateLoading(registerFormElement.querySelector('.btn'), 'Create Account', () => {
-      // Success simulation
-      showToast('Registration successful!', 'Your account has been created.', 'success');
-      
-      // In a real app, you would save auth token and redirect
-      setTimeout(() => {
-        // Switch to login tab after successful registration
-        loginTab.click();
-      }, 1000);
+      // Call the Django backend API
+      fetch('http://127.0.0.1:8000/api/user/register/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => {
+            throw new Error(data.detail || 'Registration failed');
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Success - store the authentication token
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        showToast('Registration successful!', 'Your account has been created.', 'success');
+        
+        // Set session flag
+        sessionStorage.setItem('fromLogin', 'true');
+        
+        // In a real app, you might want to automatically log in the user
+        setTimeout(() => {
+          // Switch to login tab or redirect to dashboard
+          loginTab.click();
+        }, 1000);
+      })
+      .catch(error => {
+        showToast('Registration failed', error.message, 'error');
+      });
     });
   }
 });
@@ -217,7 +274,36 @@ toastClose.addEventListener('click', hideToast);
 document.querySelectorAll('.btn-outline-primary').forEach(button => {
   if (button.textContent.trim() === 'Book Now') {
     button.addEventListener('click', () => {
-      showToast('Login Required', 'Please log in to book this event.', 'error');
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        showToast('Login Required', 'Please log in to book this event.', 'error');
+      } else {
+        // If logged in, proceed with booking
+        const eventId = button.dataset.eventId;
+        if (eventId) {
+          fetch(`http://127.0.0.1:8000/api/bookings/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ eventId })
+          })
+          .then(response => {
+            if (!response.ok) throw new Error('Booking failed');
+            return response.json();
+          })
+          .then(data => {
+            showToast('Booking Successful', 'Event has been added to your calendar.', 'success');
+            // Update button state or redirect
+          })
+          .catch(error => {
+            showToast('Booking Failed', error.message, 'error');
+          });
+        } else {
+          showToast('Error', 'Event ID not found', 'error');
+        }
+      }
     });
   }
 });
