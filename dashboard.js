@@ -6,13 +6,19 @@ const toastTitle = document.getElementById('toast-title');
 const toastMessage = document.getElementById('toast-message');
 const toastClose = document.getElementById('toast-close');
 
+// API URL (Change this to your Django server URL in production)
+const API_URL = 'http://127.0.0.1:8000/api';
+
+// Check authentication on page load
+checkAuth();
+
 // Logout functionality
 logoutButton.addEventListener('click', () => {
-  // In a real app, you would clear authentication tokens here
-  showToast('Logged out', 'You have been successfully logged out.', 'success');
+  // Clear user data from storage
+  localStorage.removeItem('user');
+  sessionStorage.removeItem('user');
   
-  // Clear the session storage flag
-  sessionStorage.removeItem('fromLogin');
+  showToast('Logged out', 'You have been successfully logged out.', 'success');
   
   // Redirect to login page after a short delay
   setTimeout(() => {
@@ -71,17 +77,51 @@ toastClose.addEventListener('click', hideToast);
 
 // Check if user is logged in
 function checkAuth() {
-  // For demo: just check if we were redirected from login
-  const fromLogin = sessionStorage.getItem('fromLogin');
-  if (!fromLogin) {
+  // Check for token in localStorage or sessionStorage
+  const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || 'null');
+  
+  if (!user || !user.token) {
     // Not authenticated, redirect to login
     showToast('Authentication Required', 'Please log in to access the dashboard.', 'error');
     setTimeout(() => {
       window.location.href = 'index.html';
     }, 2000);
+    return;
+  }
+  
+  // Update UI based on user type
+  if (user.user_type === 'admin') {
+    // Add admin-specific UI elements if needed
+    const userInfo = document.querySelector('.user-info');
+    if (userInfo) {
+      const adminBadge = document.createElement('span');
+      adminBadge.className = 'badge bg-danger mt-2';
+      adminBadge.textContent = 'Admin';
+      userInfo.appendChild(adminBadge);
+    }
+  }
+  
+  // Update user information in the sidebar
+  updateUserInfo(user);
+}
+
+// Update user information in the UI
+function updateUserInfo(user) {
+  // Update username in the dashboard
+  const username = document.querySelector('.user-info h5');
+  if (username) {
+    username.textContent = user.username;
+  }
+  
+  // Update email in the dashboard
+  const email = document.querySelector('.user-info p.text-muted');
+  if (email) {
+    email.textContent = user.email;
   }
 }
 
-// Run auth check when page loads
-// Uncomment for real authentication check
-// checkAuth();
+// Set up authentication header for all API requests
+function getAuthHeader() {
+  const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || 'null');
+  return user && user.token ? { 'Authorization': `Token ${user.token}` } : {};
+}

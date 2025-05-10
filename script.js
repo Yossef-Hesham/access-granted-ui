@@ -11,6 +11,9 @@ const toastTitle = document.getElementById('toast-title');
 const toastMessage = document.getElementById('toast-message');
 const toastClose = document.getElementById('toast-close');
 
+// API URL (Change this to your Django server URL in production)
+const API_URL = 'http://127.0.0.1:8000/api';
+
 // Tab switching
 loginTab.addEventListener('click', () => {
   loginTab.classList.add('active');
@@ -39,8 +42,8 @@ togglePasswordButtons.forEach(button => {
   });
 });
 
-// Form validation and submission
-loginFormElement.addEventListener('submit', (e) => {
+// Login Form Submission
+loginFormElement.addEventListener('submit', async (e) => {
   e.preventDefault();
   
   const email = document.getElementById('email').value;
@@ -64,29 +67,63 @@ loginFormElement.addEventListener('submit', (e) => {
   if (!password) {
     showError('password-error', 'Password is required');
     isValid = false;
-  } else if (password.length < 6) {
-    showError('password-error', 'Password must be at least 6 characters');
-    isValid = false;
   }
   
   if (isValid) {
-    // Simulate login API call
-    simulateLoading(loginFormElement.querySelector('.btn'), 'Login', () => {
-      // Success simulation
-      showToast('Success!', 'You\'ve been logged in successfully.', 'success');
+    // Start loading state
+    const loginButton = loginFormElement.querySelector('.btn');
+    simulateLoadingStart(loginButton, 'Login');
+    
+    try {
+      // Real API call to Django backend
+      const response = await fetch(`${API_URL}/login/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
       
-      // For demo: store a flag in session storage to indicate we're logged in
-      sessionStorage.setItem('fromLogin', 'true');
+      const data = await response.json();
       
-      // Redirect to dashboard
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-      }, 1000);
-    });
+      if (response.ok) {
+        // Success
+        showToast('Success!', 'You\'ve been logged in successfully.', 'success');
+        
+        // Store user info and token
+        const userData = {
+          id: data.user_id,
+          username: data.username,
+          email: data.email,
+          user_type: data.user_type,
+          token: data.token
+        };
+        
+        if (rememberMe) {
+          localStorage.setItem('user', JSON.stringify(userData));
+        } else {
+          sessionStorage.setItem('user', JSON.stringify(userData));
+        }
+        
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+      } else {
+        // Error
+        showToast('Login Failed', data.non_field_errors?.[0] || 'Invalid credentials', 'error');
+        simulateLoadingEnd(loginButton, 'Login');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      showToast('Login Failed', 'Server error. Please try again later.', 'error');
+      simulateLoadingEnd(loginButton, 'Login');
+    }
   }
 });
 
-registerFormElement.addEventListener('submit', (e) => {
+// Register Form Submission
+registerFormElement.addEventListener('submit', async (e) => {
   e.preventDefault();
   
   const name = document.getElementById('full-name').value;
@@ -136,17 +173,60 @@ registerFormElement.addEventListener('submit', (e) => {
   }
   
   if (isValid) {
-    // Simulate registration API call
-    simulateLoading(registerFormElement.querySelector('.btn'), 'Create Account', () => {
-      // Success simulation
-      showToast('Registration successful!', 'Your account has been created.', 'success');
+    // Start loading state
+    const registerButton = registerFormElement.querySelector('.btn');
+    simulateLoadingStart(registerButton, 'Create Account');
+    
+    try {
+      // Create a username from the name (remove spaces, lowercase)
+      const username = name.trim().toLowerCase().replace(/\s+/g, '');
       
-      // In a real app, you would save auth token and redirect
-      setTimeout(() => {
+      // Real API call to Django backend
+      const response = await fetch(`${API_URL}/user/register/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          username,
+          email, 
+          password
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Success
+        showToast('Registration successful!', 'Your account has been created. You can now log in.', 'success');
+        
         // Switch to login tab after successful registration
-        loginTab.click();
-      }, 1000);
-    });
+        setTimeout(() => {
+          loginTab.click();
+        }, 1000);
+      } else {
+        // Handle specific errors
+        let errorMessage = 'Registration failed. Please try again.';
+        
+        if (data.username) {
+          errorMessage = `Username error: ${data.username[0]}`;
+        } else if (data.email) {
+          errorMessage = `Email error: ${data.email[0]}`;
+        } else if (data.password) {
+          errorMessage = `Password error: ${data.password[0]}`;
+        } else if (data.non_field_errors) {
+          errorMessage = data.non_field_errors[0];
+        }
+        
+        showToast('Registration Failed', errorMessage, 'error');
+        console.error('Registration errors:', data);
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      showToast('Registration Failed', 'Server error. Please try again later.', 'error');
+    } finally {
+      simulateLoadingEnd(registerButton, 'Create Account');
+    }
   }
 });
 
@@ -182,17 +262,15 @@ function clearErrors() {
   });
 }
 
-function simulateLoading(button, originalText, callback) {
-  // Disable button and show loading state
+function simulateLoadingStart(button, originalText) {
   button.disabled = true;
   button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Please wait...';
-  
-  // Simulate API delay
-  setTimeout(() => {
-    button.disabled = false;
-    button.textContent = originalText;
-    callback();
-  }, 1500);
+  button.originalText = originalText; // Store the original text
+}
+
+function simulateLoadingEnd(button, defaultText) {
+  button.disabled = false;
+  button.textContent = button.originalText || defaultText;
 }
 
 function showToast(title, message, type = 'success') {
@@ -221,3 +299,20 @@ document.querySelectorAll('.btn-outline-primary').forEach(button => {
     });
   }
 });
+
+// Check if user is authenticated and update UI
+function checkAuthStatus() {
+  // Check for token in localStorage or sessionStorage
+  const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || 'null');
+  
+  if (user && user.token) {
+    // User is logged in
+    const accountBtn = document.querySelector('.btn-outline-primary');
+    if (accountBtn && accountBtn.textContent.trim() === 'My Account') {
+      accountBtn.textContent = 'Dashboard';
+    }
+  }
+}
+
+// Call checkAuthStatus on page load
+checkAuthStatus();
