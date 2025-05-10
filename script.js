@@ -1,4 +1,3 @@
-
 // DOM Elements
 const loginTab = document.getElementById('login-tab');
 const registerTab = document.getElementById('register-tab');
@@ -178,8 +177,7 @@ registerFormElement.addEventListener('submit', async (e) => {
     simulateLoadingStart(registerButton, 'Create Account');
     
     try {
-      // Use name as username (simplified for this example)
-      // In a real implementation, you might want to generate a unique username
+      // Generate username from the name (remove spaces, lowercase)
       const username = name.trim().toLowerCase().replace(/\s+/g, '');
       
       // Real API call to Django backend
@@ -211,11 +209,17 @@ registerFormElement.addEventListener('submit', async (e) => {
         
         if (data.username) {
           errorMessage = `Username error: ${data.username[0]}`;
-        } else if (data.email) {
+          showError('name-error', data.username[0]);
+        } 
+        if (data.email) {
           errorMessage = `Email error: ${data.email[0]}`;
-        } else if (data.password) {
+          showError('register-email-error', data.email[0]);
+        } 
+        if (data.password) {
           errorMessage = `Password error: ${data.password[0]}`;
-        } else if (data.non_field_errors) {
+          showError('register-password-error', data.password[0]);
+        }
+        if (data.non_field_errors) {
           errorMessage = data.non_field_errors[0];
         }
         
@@ -301,7 +305,7 @@ document.querySelectorAll('.btn-outline-primary').forEach(button => {
   }
 });
 
-// Check if user is authenticated and update UI
+// Check if user is authenticated
 function checkAuthStatus() {
   // Check for token in localStorage or sessionStorage
   const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || 'null');
