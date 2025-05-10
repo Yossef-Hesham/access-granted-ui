@@ -178,7 +178,8 @@ registerFormElement.addEventListener('submit', async (e) => {
     simulateLoadingStart(registerButton, 'Create Account');
     
     try {
-      // Create a username from the name (remove spaces, lowercase)
+      // Use name as username (simplified for this example)
+      // In a real implementation, you might want to generate a unique username
       const username = name.trim().toLowerCase().replace(/\s+/g, '');
       
       // Real API call to Django backend
