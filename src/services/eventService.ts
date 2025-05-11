@@ -1,4 +1,8 @@
 
+/**
+ * Service for handling event-related API requests to Django REST Framework
+ */
+
 import fetchApi from './api';
 
 export interface Event {
@@ -39,10 +43,16 @@ export const eventService = {
     // Handle file upload with FormData
     const formData = new FormData();
     
-    // Add all event data to FormData
+    // Add all event data to FormData - convert numbers to strings
     Object.entries(eventData).forEach(([key, value]) => {
       if (value !== undefined) {
-        formData.append(key, value);
+        if (key === 'price') {
+          formData.append(key, value.toString());
+        } else if (value instanceof File) {
+          formData.append(key, value);
+        } else {
+          formData.append(key, value.toString());
+        }
       }
     });
     
@@ -60,7 +70,13 @@ export const eventService = {
     
     Object.entries(eventData).forEach(([key, value]) => {
       if (value !== undefined) {
-        formData.append(key, value);
+        if (key === 'price' && typeof value === 'number') {
+          formData.append(key, value.toString());
+        } else if (value instanceof File) {
+          formData.append(key, value);
+        } else {
+          formData.append(key, value.toString());
+        }
       }
     });
     

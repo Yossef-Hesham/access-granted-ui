@@ -1,4 +1,8 @@
 
+/**
+ * Service for handling booking-related API requests to Django REST Framework
+ */
+
 import fetchApi from './api';
 import { Event } from './eventService';
 

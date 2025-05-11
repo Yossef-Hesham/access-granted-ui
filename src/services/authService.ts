@@ -1,5 +1,10 @@
 
+/**
+ * Service for handling authentication-related API requests to Django REST Framework
+ */
+
 import fetchApi from './api';
+import { toast } from "@/hooks/use-toast";
 
 export interface RegisterData {
   name: string;
@@ -53,6 +58,10 @@ export const authService = {
   logout: () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    toast({
+      title: "Logged out",
+      description: "You've been successfully logged out",
+    });
   },
 
   getCurrentUser: (): User | null => {
