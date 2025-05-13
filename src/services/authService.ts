@@ -5,6 +5,7 @@
 
 import fetchApi from './api';
 import { toast } from "@/hooks/use-toast";
+import { AUTH_ENDPOINTS } from './apiEndpoints';
 
 export interface RegisterData {
   name: string;
@@ -26,7 +27,7 @@ export interface User {
 
 export const authService = {
   register: async (userData: RegisterData) => {
-    const response = await fetchApi<{ user: User; token: string }>('/user/register/', {
+    const response = await fetchApi<{ user: User; token: string }>(AUTH_ENDPOINTS.REGISTER, {
       method: 'POST',
       body: JSON.stringify(userData),
     });
@@ -41,7 +42,7 @@ export const authService = {
   },
 
   login: async (credentials: LoginData) => {
-    const response = await fetchApi<{ user: User; token: string }>('/user/login/', {
+    const response = await fetchApi<{ user: User; token: string }>(AUTH_ENDPOINTS.LOGIN, {
       method: 'POST',
       body: JSON.stringify(credentials),
     });

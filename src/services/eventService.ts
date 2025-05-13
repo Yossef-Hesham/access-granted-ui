@@ -4,6 +4,7 @@
  */
 
 import fetchApi from './api';
+import { EVENT_ENDPOINTS } from './apiEndpoints';
 
 export interface Event {
   id: number;
@@ -30,12 +31,12 @@ export interface EventCreateData {
 export const eventService = {
   // Get all events
   getAllEvents: async () => {
-    return await fetchApi<Event[]>('/events/');
+    return await fetchApi<Event[]>(EVENT_ENDPOINTS.BASE);
   },
 
   // Get single event by ID
   getEvent: async (eventId: number) => {
-    return await fetchApi<Event>(`/events/${eventId}/`);
+    return await fetchApi<Event>(EVENT_ENDPOINTS.SINGLE(eventId));
   },
 
   // Create new event (admin only)
@@ -56,7 +57,7 @@ export const eventService = {
       }
     });
     
-    return await fetchApi<Event>('/events/', {
+    return await fetchApi<Event>(EVENT_ENDPOINTS.BASE, {
       method: 'POST',
       body: formData,
       headers: {}, // Let browser set content type with boundary
@@ -80,7 +81,7 @@ export const eventService = {
       }
     });
     
-    return await fetchApi<Event>(`/events/${eventId}/`, {
+    return await fetchApi<Event>(EVENT_ENDPOINTS.SINGLE(eventId), {
       method: 'PATCH',
       body: formData,
       headers: {}, // Let browser set content type with boundary
@@ -89,7 +90,7 @@ export const eventService = {
 
   // Delete event (admin only)
   deleteEvent: async (eventId: number) => {
-    return await fetchApi(`/events/${eventId}/`, {
+    return await fetchApi(EVENT_ENDPOINTS.SINGLE(eventId), {
       method: 'DELETE',
     });
   },

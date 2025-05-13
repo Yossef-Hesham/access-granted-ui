@@ -3,7 +3,7 @@
  * Base API client for communicating with Django REST Framework backend
  */
 
-const API_URL = "http://127.0.0.1:8000/api";
+import { BASE_API_URL } from './apiEndpoints';
 
 // Response type for consistent error handling
 export interface ApiResponse<T> {
@@ -23,7 +23,7 @@ async function fetchApi<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
-    const url = `${API_URL}${endpoint}`;
+    const url = `${BASE_API_URL}${endpoint}`;
     
     // Set default headers if not provided
     if (!options.headers) {
