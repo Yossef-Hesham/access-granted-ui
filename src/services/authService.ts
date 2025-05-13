@@ -27,7 +27,22 @@ export interface User {
 
 export const authService = {
   register: async (userData: RegisterData) => {
-    const response = await fetchApi<{ user: User; token: string }>(AUTH_ENDPOINTS.REGISTER, {
+    const response = await fetchApi<{ user: User; token: string }>(AUTH_ENDPOINTS.USER_REGISTER, {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+
+    if (response.success && response.data) {
+      // Store token in local storage
+      localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
+
+    return response;
+  },
+
+  registerAdmin: async (userData: RegisterData) => {
+    const response = await fetchApi<{ user: User; token: string }>(AUTH_ENDPOINTS.ADMIN_REGISTER, {
       method: 'POST',
       body: JSON.stringify(userData),
     });

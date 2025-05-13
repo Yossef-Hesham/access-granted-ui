@@ -9,8 +9,9 @@ export const BASE_API_URL = "http://127.0.0.1:8000/api";
 
 // Authentication endpoints
 export const AUTH_ENDPOINTS = {
-  REGISTER: "/user/register/",
-  LOGIN: "/user/login/",
+  USER_REGISTER: "/user/register/",
+  ADMIN_REGISTER: "/admin/register/",
+  LOGIN: "/login/",
 };
 
 // Event endpoints
