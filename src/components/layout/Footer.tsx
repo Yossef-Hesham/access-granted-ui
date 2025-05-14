@@ -3,7 +3,7 @@ import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 
 const Footer: React.FC = () => {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const currentYear = new Date().getFullYear();
   
   return (
