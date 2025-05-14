@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 
 type Language = 'en' | 'ar';
@@ -66,6 +65,12 @@ const translations: Record<Language, Record<string, string>> = {
     'button.save': 'Save',
     'button.back': 'Back',
     'button.home': 'Go Home',
+    
+    // Footer
+    'footer.rights_reserved': 'All rights reserved.',
+    'footer.terms': 'Terms',
+    'footer.privacy': 'Privacy',
+    'footer.contact': 'Contact',
   },
   ar: {
     // Common
@@ -120,6 +125,12 @@ const translations: Record<Language, Record<string, string>> = {
     'button.save': 'حفظ',
     'button.back': 'رجوع',
     'button.home': 'الصفحة الرئيسية',
+    
+    // Footer
+    'footer.rights_reserved_ar': 'جميع الحقوق محفوظة.',
+    'footer.terms_ar': 'الشروط',
+    'footer.privacy_ar': 'الخصوصية',
+    'footer.contact_ar': 'اتصل بنا',
   }
 };
 
