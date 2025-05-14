@@ -1,13 +1,11 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import PasswordInput from "./PasswordInput";
 import { Mail, User } from "lucide-react";
-import { authService, RegisterData } from "@/services/authService";
 
 interface RegisterFormProps {
   onRegisterSuccess?: (name: string, email: string, password: string) => void;
@@ -85,23 +83,19 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     return isValid;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
     
     setIsLoading(true);
     
-    try {
-      const registerData: RegisterData = {
-        name,
-        email,
-        password
-      };
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
       
-      const response = await authService.register(registerData);
-      
-      if (response.success) {
+      try {
+        // In a real implementation, this would be the registration logic
         if (onRegisterSuccess) {
           onRegisterSuccess(name, email, password);
         }
@@ -110,35 +104,20 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           title: "Registration successful!",
           description: "Your account has been created.",
         });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to register";
         
-        // Automatically log in after registration
-        window.location.href = "/dashboard.html";
-      } else {
         if (onRegisterError) {
-          onRegisterError(response.error || "Registration failed");
+          onRegisterError(errorMessage);
         }
         
         toast({
           title: "Registration failed",
-          description: response.error || "Failed to create account",
+          description: errorMessage,
           variant: "destructive",
         });
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to register";
-      
-      if (onRegisterError) {
-        onRegisterError(errorMessage);
-      }
-      
-      toast({
-        title: "Registration failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    }, 1500);
   };
 
   return (

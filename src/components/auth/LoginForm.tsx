@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import PasswordInput from "./PasswordInput";
 import { Eye, EyeOff, Mail } from "lucide-react";
-import { authService, LoginData } from "@/services/authService";
 
 interface LoginFormProps {
   onLoginSuccess?: (email: string, password: string) => void;
@@ -55,22 +54,19 @@ const LoginForm: React.FC<LoginFormProps> = ({
     return isValid;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
     
     setIsLoading(true);
     
-    try {
-      const loginData: LoginData = {
-        email,
-        password
-      };
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
       
-      const response = await authService.login(loginData);
-      
-      if (response.success) {
+      try {
+        // In a real implementation, this would be the authentication logic
         if (onLoginSuccess) {
           onLoginSuccess(email, password);
         }
@@ -79,41 +75,20 @@ const LoginForm: React.FC<LoginFormProps> = ({
           title: "Success!",
           description: "You've been logged in successfully.",
         });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to login";
         
-        if (rememberMe) {
-          localStorage.setItem("rememberEmail", email);
-        } else {
-          localStorage.removeItem("rememberEmail");
-        }
-        
-        // Redirect to dashboard/home
-        window.location.href = "/dashboard.html";
-      } else {
         if (onLoginError) {
-          onLoginError(response.error || "Login failed");
+          onLoginError(errorMessage);
         }
         
         toast({
           title: "Login failed",
-          description: response.error || "Invalid credentials",
+          description: errorMessage,
           variant: "destructive",
         });
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to login";
-      
-      if (onLoginError) {
-        onLoginError(errorMessage);
-      }
-      
-      toast({
-        title: "Login failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    }, 1500);
   };
 
   return (
